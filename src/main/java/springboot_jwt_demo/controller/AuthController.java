@@ -22,25 +22,31 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
-
-   @PostMapping("/authenticate")
+@PostMapping("/authenticate")
 public ResponseEntity<?> authenticate(@RequestBody AuthRequest request) {
     try {
-        System.out.println("Authenticating: " + request.getUsername());
+        System.out.println("Trying to authenticate: " + request.getUsername());
 
         authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            new UsernamePasswordAuthenticationToken(
+                request.getUsername(), request.getPassword()
+            )
         );
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
         String token = jwtUtil.generateToken(userDetails.getUsername());
 
         return ResponseEntity.ok(new AuthResponse(token));
+
     } catch (BadCredentialsException e) {
-        System.out.println("Bad credentials for: " + request.getUsername());
-        return ResponseEntity.status(401).body("Invalid credentials");
+        System.out.println("Invalid login for: " + request.getUsername());
+        return ResponseEntity.status(401).body("Invalid username or password");
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body("Something went wrong: " + e.getMessage());
     }
 }
+
 
 
     @GetMapping("/hello")
