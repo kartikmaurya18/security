@@ -23,27 +23,25 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @PostMapping("/authenticate")
-    public ResponseEntity<?> authenticate(@RequestBody AuthRequest request) {
-        try {
-            // 1. Authenticate username and password with Spring Security
-            authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-            );
+   @PostMapping("/authenticate")
+public ResponseEntity<?> authenticate(@RequestBody AuthRequest request) {
+    try {
+        System.out.println("Authenticating: " + request.getUsername());
 
-            // 2. Load user details after successful authentication
-            UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+        );
 
-            // 3. Generate JWT token
-            String token = jwtUtil.generateToken(userDetails.getUsername());
+        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
+        String token = jwtUtil.generateToken(userDetails.getUsername());
 
-            // 4. Return the token in the response
-            return ResponseEntity.ok(new AuthResponse(token));
-        } catch (BadCredentialsException e) {
-            // Wrong username or password
-            return ResponseEntity.status(401).body("Invalid credentials");
-        }
+        return ResponseEntity.ok(new AuthResponse(token));
+    } catch (BadCredentialsException e) {
+        System.out.println("Bad credentials for: " + request.getUsername());
+        return ResponseEntity.status(401).body("Invalid credentials");
     }
+}
+
 
     @GetMapping("/hello")
     public String hello() {
